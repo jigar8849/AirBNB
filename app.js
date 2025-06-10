@@ -5,7 +5,9 @@ const Listing = require("../AirBNB/models/listing")
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-
+const wrapAsync = require("./utils/wrapAsync");
+const ExpressError = require("./utils/ExpressError.js");
+const {listingSchema} = require("./schema.js");
 
 app.set("view engine", "ejs");
 app.set("views",path.join(__dirname,"views"));
@@ -26,14 +28,25 @@ async function main(){
     await mongoose.connect("mongodb://127.0.0.1:27017/AirBNB");
 }
 app.get("/",(req,res)=>{
-    res.send("this is home route");
+    res.send("home root");
 });
 
+const validateListing = (req,res,next)=>{
+    let {error} = listingSchema.validate(req.body,{abortEarly : false});
+        if(result.error){
+            let errMsg = error.details.map((el)=> el.message).join(",");
+            throw new ExpressError(400, errMsg);
+        }else{
+            next()
+        }
+}
+
 // Index Route
-app.get("/listings",async(req,res)=>{
+app.get("/listings",wrapAsync(async(req,res)=>{
     const allListings = await Listing.find({})
     res.render("listings/index.ejs",{allListings});
-});
+})
+)
 
 // New listing button 
 app.get("/listings/new",(req,res)=>{
@@ -41,39 +54,41 @@ app.get("/listings/new",(req,res)=>{
 });
 
 // Show Route
-app.get("/listings/:id",async(req,res)=>{
+app.get("/listings/:id",wrapAsync(async(req,res)=>{
     let {id} = req.params;
     const listing = await Listing.findById(id);
     res.render("listings/show.ejs",{listing});
-});
+})
+)
 
-// Save new listing
-app.post("/listings",async(req,res)=>{
-    const  newListings = new Listing(req.body.listings);
-    await newListings.save();
-    res.redirect("/listings");
-});
+// create new listing
+app.post("/listings",validateListing,wrapAsync(async(req,res,next)=>{
+        const  newListings = new Listing(req.body.listings);
+        await newListings.save();
+        res.redirect("/listings");
+    })
+);
 
 // Redirect to edit form
-app.get("/listings/:id/edit",async(req,res)=>{
+app.get("/listings/:id/edit",wrapAsync(async(req,res)=>{
     let {id} = req.params;
     const listing = await Listing.findById(id);
     res.render("listings/edit.ejs",{listing});
-});
+}));
 
-app.put("/listings/:id",async(req,res)=>{
+app.put("/listings/:id",validateListing,wrapAsync(async(req,res)=>{
       let {id} = req.params;
       await Listing.findByIdAndUpdate(id, { ...req.body.listings });
       res.redirect(`/listings/${id}`);
-});
+}));
 
 
 // Delete route
-app.delete("/listings/:id",async(req,res)=>{
+app.delete("/listings/:id",wrapAsync(async(req,res)=>{
     let {id} = req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
-})
+}))
 
 
 // app.get("/testListing",(req,res)=>{
@@ -90,7 +105,23 @@ app.delete("/listings/:id",async(req,res)=>{
 //     })
 // })
 
+// this app.all give me error when i went to use it and still no any way to find to solve it 
+
+// app.all("*",(req,res,next)=>{
+//     next(new ExpressError(404,"Page not found!!!"))    
+// })
+
+app.get("/test-error", (req, res, next) => {
+    next(new ExpressError(404, "This is a test error"));
+});
+
+
+app.use((err, req, res, next) => {
+    const { statusCode = 500 , message = "Something went wrong" } = err;
+    res.status(statusCode).render("error.ejs", { message }); // 🔁 this line must include `err`
+});
+
 
 app.listen(8080,()=>{
     console.log("Server is running on port 8080");
-})
+})  
