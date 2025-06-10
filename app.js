@@ -8,6 +8,8 @@ const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError.js");
 const {listingSchema} = require("./schema.js");
+const Review = require("../AirBNB/models/review")
+
 
 app.set("view engine", "ejs");
 app.set("views",path.join(__dirname,"views"));
@@ -90,6 +92,21 @@ app.delete("/listings/:id",wrapAsync(async(req,res)=>{
     res.redirect("/listings");
 }))
 
+// Reviews  - ka post route
+
+app.post("/listings/:id/reviews",async(req,res)=>{
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+
+     listing.reviews.push(newReview);
+
+     await newReview.save();
+     await listing.save();
+
+     res.redirect(`/listings/${listing._id}`);
+})
+
+
 
 // app.get("/testListing",(req,res)=>{
 //     let sampleListing = new Listing({
@@ -107,9 +124,6 @@ app.delete("/listings/:id",wrapAsync(async(req,res)=>{
 
 // this app.all give me error when i went to use it and still no any way to find to solve it 
 
-// app.all("*",(req,res,next)=>{
-//     next(new ExpressError(404,"Page not found!!!"))    
-// })
 
 app.get("/test-error", (req, res, next) => {
     next(new ExpressError(404, "This is a test error"));
@@ -125,3 +139,8 @@ app.use((err, req, res, next) => {
 app.listen(8080,()=>{
     console.log("Server is running on port 8080");
 })  
+
+
+// app.all("*",(req,res,next)=>{
+//     next(new ExpressError(404,"Page not found!!!"))    
+// })
