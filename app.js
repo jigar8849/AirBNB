@@ -30,7 +30,7 @@ async function main(){
     await mongoose.connect("mongodb://127.0.0.1:27017/AirBNB");
 }
 app.get("/",(req,res)=>{
-    res.send("home root");
+    res.redirect("/listings");
 });
 
 // server side validation for listing schema
