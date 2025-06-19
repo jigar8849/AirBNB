@@ -67,17 +67,18 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req,res,next)=>{
     res.locals.success = req.flash("success") //flash messages
     res.locals.error = req.flash("error") //flash messages
+    res.locals.currUser = req.user; // this var is use in nav bar to show that user is logged in or not, if it than logout btn show else login btn show
     next();
 });
 
-app.get("/demo",async(req,res)=>{
-    let fakeUSer = new User({
-        email : "jigar@gmail.com",
-        username : "jigar",
-    })
-    let registerUser = await User.register(fakeUSer,"passwordHaiYe")
-    res.send(registerUser)
-})
+// app.get("/demo",async(req,res)=>{
+//     let fakeUSer = new User({
+//         email : "jigar@gmail.com",
+//         username : "jigar",
+//     })
+//     let registerUser = await User.register(fakeUSer,"passwordHaiYe")
+//     res.send(registerUser)
+// })
  
 
 // this line use for use all route related to listings & reviews from routes folder
