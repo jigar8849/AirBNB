@@ -5,11 +5,14 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
-const listings = require("./routes/listing.js"); // require all listings routes from routes folder 
-const reviews = require("./routes/review.js") //require all revirews router from routes folder
+const listingRouter = require("./routes/listing.js"); // require all listings routes from routes folder 
+const reviewRouter = require("./routes/review.js") //require all revirews router from routes folder
+const userRouter = require("./routes/user.js"); //require all user router from routes folder
 const session = require("express-session"); //use for sessions
 const flash = require("connect-flash"); //use for flash messages
-
+const passport = require("passport")
+const LocalStrategy = require("passport-local")
+const User = require("./models/user.js") //require user model from models folder
 
 
 app.set("view engine", "ejs");
@@ -52,7 +55,14 @@ const sessionOptions = {
 
 app.use(session(sessionOptions)); //midleware session call
 app.use(flash());
+app.use(passport.initialize());//initialize the passport
+app.use(passport.session()) //use passport session
+passport.use(new LocalStrategy(User.authenticate()));
 
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+ 
 //middleware for display flash massages
 app.use((req,res,next)=>{
     res.locals.success = req.flash("success") //flash messages
@@ -60,9 +70,20 @@ app.use((req,res,next)=>{
     next();
 });
 
+app.get("/demo",async(req,res)=>{
+    let fakeUSer = new User({
+        email : "jigar@gmail.com",
+        username : "jigar",
+    })
+    let registerUser = await User.register(fakeUSer,"passwordHaiYe")
+    res.send(registerUser)
+})
+ 
+
 // this line use for use all route related to listings & reviews from routes folder
-app.use("/listings", listings)
-app.use("/listings/:id/reviews", reviews)
+app.use("/listings", listingRouter)
+app.use("/listings/:id/reviews", reviewRouter)
+app.use("/", userRouter)
 
 
 app.get("/test-error", (req, res, next) => {
@@ -74,10 +95,10 @@ app.listen(8080,()=>{
 }) 
 
 
-// app.use((err, req, res, next) => {
-//     const { statusCode = 500, message = "Something went wrong" } = err;
-//     res.status(statusCode).render("error.ejs", { message }); // you can pass full `err` if needed
-// });
+app.use((err, req, res, next) => {
+    const { statusCode = 500, message = "Something went wrong" } = err;
+    res.status(statusCode).render("error.ejs", { message }); // you can pass full `err` if needed
+}); 
 
 
 
