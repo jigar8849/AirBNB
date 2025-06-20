@@ -24,13 +24,16 @@ router.get("/:id",wrapAsync(listingController.showListing))
 
 
 // create new listing
-router.post("/",isLoggedIn,validateListing,upload.single("listing[image]"),wrapAsync(listingController.createListing));
+router.post("/",isLoggedIn,
+    validateListing,
+    upload.single("listing[image]"),  //this is a multer parse our image and save images in to cloudinary
+    wrapAsync(listingController.createListing));
  
 // Edit - Redirect to edit form
 router.get("/:id/edit",isLoggedIn,isOwner,wrapAsync(listingController.renderEditForm));
 
 // Update route
-router.put("/:id",isLoggedIn,isOwner,validateListing,wrapAsync(listingController.updateListing));
+router.put("/:id",isLoggedIn,isOwner,upload.single("listing[image]"),validateListing,wrapAsync(listingController.updateListing));
 
 // Delete route
 router.delete("/:id",isLoggedIn,isOwner,wrapAsync(listingController.destroyListing))
