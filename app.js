@@ -11,6 +11,7 @@ const listingRouter = require("./routes/listing.js"); // require all listings ro
 const reviewRouter = require("./routes/review.js") //require all revirews router from routes folder
 const userRouter = require("./routes/user.js"); //require all user router from routes folder
 const session = require("express-session"); //use for sessions
+const MongoStore = require("connect-mongo");
 const flash = require("connect-flash"); //use for flash messages
 const passport = require("passport")
 const LocalStrategy = require("passport-local")
@@ -25,9 +26,9 @@ app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
 
-app.get("/",(req,res)=>{
-    res.redirect("/listings");
-});
+// app.get("/",(req,res)=>{
+//     res.redirect("/listings");
+// });
 
 
 main()
@@ -38,12 +39,25 @@ main()
         console.log(err);
     });
 async function main(){
-    await mongoose.connect("mongodb://127.0.0.1:27017/AirBNB");
+    await mongoose.connect(process.env.ATLASDB_URL);
 }
 
 
+const store = MongoStore.create({
+    mongoUrl: process.env.ATLASDB_URL,
+    crypto : {
+        secret : process.env.SECRET
+    },
+    touchAfter : 24 * 3600 // 1 day
+})
+
+store.on("error",()=>{
+    console.log("Error in MONGO SESSION STORE", err)
+})
+
 const sessionOptions = {
-    secret : "mysupersecretcode",
+    store,
+    secret : process.env.SECRET,
     resave : false,
     saveUninitialized : true,
     cookie : {
@@ -98,10 +112,10 @@ app.listen(8080,()=>{
 }) 
 
 
-// app.use((err, req, res, next) => {
-//     const { statusCode = 500, message = "Something went wrong" } = err;
-//     res.status(statusCode).render("error.ejs", { message }); // you can pass full `err` if needed
-// }); 
+app.use((err, req, res, next) => {
+    const { statusCode = 500, message = "Something went wrong" } = err;
+    res.status(statusCode).render("error.ejs", { message }); // you can pass full `err` if needed
+}); 
 
 
 

@@ -35,6 +35,12 @@ const listingSchema = new Schema({
       required: true
     }
   }
+
+  //this is for sorting by category :- comment hai ye
+  // category : {
+  //   type : String,
+  //   enum : ["mountaints","arctic","farms","camping"],
+  // }
 });
 
 listingSchema.post("findOneAndDelete", async (listing) => {

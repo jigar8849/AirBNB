@@ -47,7 +47,6 @@ module.exports.createListing = async (req, res, next) => {
     newListings.image = { url, filename }
     newListings.geometry = response.body.features[0].geometry;
     let save = await newListings.save();
-    console.log(save)
     req.flash("success", "New Listing Created!");
     res.redirect("/listings");
 }
