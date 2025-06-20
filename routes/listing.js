@@ -4,6 +4,10 @@ const wrapAsync = require("../utils/wrapAsync.js");
 const Listing = require("../models/listing.js")
 const {isLoggedIn, isOwner, validateListing} = require("../middleware.js")
 
+const multer = require("multer")
+const {storage} = require("../cloudConfig.js")
+const upload = multer({storage})
+
 const listingController = require("../controllers/listings.js");
 
 
@@ -20,8 +24,8 @@ router.get("/:id",wrapAsync(listingController.showListing))
 
 
 // create new listing
-router.post("/",validateListing,wrapAsync(listingController.createListing));
-
+router.post("/",isLoggedIn,validateListing,upload.single("listing[image]"),wrapAsync(listingController.createListing));
+ 
 // Edit - Redirect to edit form
 router.get("/:id/edit",isLoggedIn,isOwner,wrapAsync(listingController.renderEditForm));
 

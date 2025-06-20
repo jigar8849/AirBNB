@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -96,10 +98,10 @@ app.listen(8080,()=>{
 }) 
 
 
-app.use((err, req, res, next) => {
-    const { statusCode = 500, message = "Something went wrong" } = err;
-    res.status(statusCode).render("error.ejs", { message }); // you can pass full `err` if needed
-}); 
+// app.use((err, req, res, next) => {
+//     const { statusCode = 500, message = "Something went wrong" } = err;
+//     res.status(statusCode).render("error.ejs", { message }); // you can pass full `err` if needed
+// }); 
 
 
 
