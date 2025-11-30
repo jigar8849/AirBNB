@@ -24,7 +24,11 @@ const User = require("./models/user.js");
 // DB CONNECTION
 // =================
 async function main() {
-    await mongoose.connect(process.env.ATLASDB_URL);
+    await mongoose.connect(process.env.ATLASDB_URL, {
+        ssl: true,
+        tlsAllowInvalidCertificates: false,
+        tlsAllowInvalidHostnames: false,
+    });
 }
 main()
     .then(() => console.log("Connected to MongoDB"))
