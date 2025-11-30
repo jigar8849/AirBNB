@@ -28,11 +28,12 @@ async function main() {
         ssl: true,
         tlsAllowInvalidCertificates: false,
         tlsAllowInvalidHostnames: false,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+        bufferMaxEntries: 0,
     });
 }
-main()
-    .then(() => console.log("Connected to MongoDB"))
-    .catch((err) => console.log(err));
 
 // =================
 // VIEW + MIDDLEWARE SETUP
@@ -126,6 +127,14 @@ app.use((err, req, res, next) => {
 // =================
 // SERVER START
 // =================
-app.listen(8080, () => {
-    console.log("Server running on http://localhost:8080");
-});
+main()
+    .then(() => {
+        console.log("Connected to MongoDB");
+        app.listen(8080, () => {
+            console.log("Server running on http://localhost:8080");
+        });
+    })
+    .catch((err) => {
+        console.log("DB connection failed:", err);
+        process.exit(1);
+    });
