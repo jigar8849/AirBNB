@@ -30,8 +30,6 @@ async function main() {
         tlsAllowInvalidHostnames: false,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
-        bufferCommands: false,
-        bufferMaxEntries: 0,
     });
 }
 
